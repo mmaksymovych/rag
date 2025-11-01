@@ -24,6 +24,7 @@ export class ChatController {
         }
     }
 
+
     @Get('models')
     async getModels(): Promise<any> {
         try {

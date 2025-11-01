@@ -33,6 +33,28 @@ services:
       - OLLAMA_CHAT_MODEL=llama3:8b
     restart: unless-stopped
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3080:8080"
+    depends_on:
+      - nestjs-api
+      - ollama
+    volumes:
+      - ./open-webui-data:/app/backend/data
+    environment:
+      # Connect to our RAG API instead of directly to Ollama
+      - ENABLE_OPENAI_API=true
+      - OPENAI_API_BASE_URL=http://nestjs-api:3000/v1
+      - OPENAI_API_KEY=sk-webui-rag
+      # Optional: Also allow direct Ollama access
+      - WEBUI_SECRET_KEY=your-super-secret-key-change-this
+      - DEFAULT_MODELS=rag-llama3
+      # Disable follow-up questions
+      - ENABLE_FOLLOW_UP_GENERATION=false
+    restart: unless-stopped
+
 networks:
   default:
     driver: bridge

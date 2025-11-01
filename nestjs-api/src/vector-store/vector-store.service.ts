@@ -67,6 +67,9 @@ export class VectorStoreService implements OnModuleInit {
      * Store text chunks with embeddings
      */
     async upsertChunksWithEmbeddings(chunks: TextChunk[], embeddings: number[][]): Promise<void> {
+        const startTime = Date.now();
+        console.log(`[VectorStoreService] Upserting ${chunks.length} chunks to collection: ${this.collectionName}`);
+        
         try {
             const points = chunks.map((chunk, index) => ({
                 id: Date.now() + index, // Use timestamp + index as integer ID
@@ -80,11 +83,21 @@ export class VectorStoreService implements OnModuleInit {
                 },
             }));
 
+            const sourceIds = [...new Set(chunks.map(c => c.sourceId))];
+            console.log(`[VectorStoreService] Prepared ${points.length} points for upsert, Source IDs: [${sourceIds.join(', ')}]`);
+
+            const upsertStart = Date.now();
             await this.qdrantClient.upsert(this.collectionName, {
                 wait: true,
                 points,
             });
+            const upsertDuration = Date.now() - upsertStart;
+            const totalDuration = Date.now() - startTime;
+            
+            console.log(`[VectorStoreService] Successfully upserted ${points.length} points - Qdrant operation: ${upsertDuration}ms, Total: ${totalDuration}ms`);
         } catch (error) {
+            const totalDuration = Date.now() - startTime;
+            console.error(`[VectorStoreService] Failed to store chunks after ${totalDuration}ms:`, error.message);
             throw new HttpException(
                 `Failed to store chunks: ${error.message}`,
                 HttpStatus.INTERNAL_SERVER_ERROR
@@ -96,19 +109,35 @@ export class VectorStoreService implements OnModuleInit {
      * Search for similar chunks
      */
     async semanticSearch(queryEmbedding: number[], topK: number = 5): Promise<SearchResult[]> {
+        const startTime = Date.now();
+        const embeddingDim = queryEmbedding.length;
+        console.log(`[VectorStoreService] Semantic search - Collection: ${this.collectionName}, TopK: ${topK}, Embedding dimension: ${embeddingDim}`);
+        
         try {
+            const searchStart = Date.now();
             const searchResult = await this.qdrantClient.search(this.collectionName, {
                 vector: queryEmbedding,
                 limit: topK,
                 with_payload: true,
             });
+            const searchDuration = Date.now() - searchStart;
 
-            return searchResult.map((result) => ({
+            const results = searchResult.map((result) => ({
                 id: result.id as string,
                 score: result.score,
                 payload: result.payload as any,
             }));
+            
+            const totalDuration = Date.now() - startTime;
+            const scores = results.map(r => r.score.toFixed(3));
+            const sourceIds = [...new Set(results.map(r => r.payload.sourceId))];
+            
+            console.log(`[VectorStoreService] Found ${results.length} results - Scores: [${scores.join(', ')}], Sources: [${sourceIds.join(', ')}], Qdrant search: ${searchDuration}ms, Total: ${totalDuration}ms`);
+
+            return results;
         } catch (error) {
+            const totalDuration = Date.now() - startTime;
+            console.error(`[VectorStoreService] Failed to search vectors after ${totalDuration}ms:`, error.message);
             throw new HttpException(
                 `Failed to search vectors: ${error.message}`,
                 HttpStatus.INTERNAL_SERVER_ERROR

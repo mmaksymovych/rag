@@ -108,6 +108,9 @@ Thumbs.db
 qdrant_storage/
 ollama_models/
 
+# Open WebUI data
+open-webui-data/
+
 # Backup files
 *.bak
 *.backup

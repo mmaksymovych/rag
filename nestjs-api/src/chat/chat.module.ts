@@ -7,6 +7,7 @@ import { EmbeddingModule } from '../embedding/embedding.module';
 @Module({
   imports: [VectorStoreModule, EmbeddingModule],
   controllers: [ChatController],
-  providers: [ChatService]
+  providers: [ChatService],
+  exports: [ChatService]
 })
 export class ChatModule { }

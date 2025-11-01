@@ -7,6 +7,7 @@ A Retrieval-Augmented Generation (RAG) chatbot system built with NestJS, Ollama,
 - **NestJS API**: Text processing, chunking, embedding, and RAG chat service
 - **Ollama**: Local LLM for embeddings and chat completions (OpenAI-compatible API)
 - **Qdrant**: Vector database for semantic search
+- **Open WebUI**: Simple, user-friendly web UI for chatting with the RAG system
 - **Docker**: Containerization for all services
 
 ## Phase 1: Core Text Embeddings & RAG API
@@ -36,6 +37,7 @@ This phase implements the core functionality for text processing and RAG chat vi
    - Qdrant: http://localhost:6333
    - Ollama: http://localhost:11434
    - NestJS API: http://localhost:3000
+   - Open WebUI: http://localhost:3080
 
 4. **Test the system:**
    ```bash
@@ -58,7 +60,9 @@ This phase implements the core functionality for text processing and RAG chat vi
 - `DELETE /text/:sourceId` - Remove text from vector DB
 
 #### Chat
-- `POST /chat` - RAG-enhanced chat
+- `POST /chat` - RAG-enhanced chat (custom format)
+- `POST /v1/chat/completions` - OpenAI-compatible endpoint for LibreChat
+- `GET /v1/models` - OpenAI-compatible models list
 - `GET /chat/models` - List available models
 
 #### Health
@@ -132,9 +136,16 @@ npm run start:dev
    - Check API logs: `docker-compose logs nestjs-api`
    - Verify environment variables are set correctly
 
+## Phase 2: Open WebUI Integration ✅
+
+Open WebUI is now integrated and configured to use the RAG system. See [OPENWEBUI_SETUP.md](./OPENWEBUI_SETUP.md) for detailed setup and usage instructions.
+
+**Quick Access:**
+- Open WebUI: http://localhost:3080
+- The system automatically uses Qdrant as the knowledge base for all chat queries
+
 ## Next Phases
 
-- **Phase 2**: LibreChat UI Integration
 - **Phase 3**: File Processing (PDF & Audio)
 
 ## License
