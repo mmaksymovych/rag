@@ -59,9 +59,13 @@ This phase implements the core functionality for text processing and RAG chat vi
 - `GET /text` - List stored text chunks
 - `DELETE /text/:sourceId` - Remove text from vector DB
 
+#### File Processing
+- `POST /file/upload/pdf` - Upload and process PDF file
+- `POST /file/upload/audio` - Upload and transcribe audio file
+
 #### Chat
 - `POST /chat` - RAG-enhanced chat (custom format)
-- `POST /v1/chat/completions` - OpenAI-compatible endpoint for LibreChat
+- `POST /v1/chat/completions` - OpenAI-compatible endpoint for Open WebUI
 - `GET /v1/models` - OpenAI-compatible models list
 - `GET /chat/models` - List available models
 
@@ -144,9 +148,24 @@ Open WebUI is now integrated and configured to use the RAG system. See [OPENWEBU
 - Open WebUI: http://localhost:3080
 - The system automatically uses Qdrant as the knowledge base for all chat queries
 
-## Next Phases
+## Phase 3: File Processing (PDF & Audio) ✅
 
-- **Phase 3**: File Processing (PDF & Audio)
+PDF and audio file processing is now implemented. See [PHASE3_FILES.md](./PHASE3_FILES.md) for detailed setup and usage instructions.
+
+**Available Endpoints:**
+- `POST /file/upload/pdf` - Upload and process PDF files
+- `POST /file/upload/audio` - Upload and transcribe audio files
+
+**Quick Test:**
+```bash
+# Upload a PDF
+curl -X POST http://localhost:3000/file/upload/pdf -F "file=@document.pdf"
+
+# Upload an audio file (requires OpenAI API key)
+curl -X POST http://localhost:3000/file/upload/audio -F "file=@recording.mp3"
+```
+
+**Note:** Audio transcription requires an OpenAI API key. Configure it in `docker-compose.yml` as `OPENAI_API_KEY`.
 
 ## License
 

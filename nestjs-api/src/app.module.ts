@@ -7,6 +7,7 @@ import { EmbeddingModule } from './embedding/embedding.module';
 import { VectorStoreModule } from './vector-store/vector-store.module';
 import { ChatModule } from './chat/chat.module';
 import { OpenAIModule } from './openai/openai.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { OpenAIModule } from './openai/openai.module';
     EmbeddingModule,
     VectorStoreModule,
     ChatModule,
-    OpenAIModule
+    OpenAIModule,
+    FileModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,6 +7,7 @@ import { EmbeddingModule } from '../embedding/embedding.module';
 @Module({
   imports: [VectorStoreModule, EmbeddingModule],
   controllers: [TextController],
-  providers: [TextService]
+  providers: [TextService],
+  exports: [TextService]
 })
 export class TextModule { }

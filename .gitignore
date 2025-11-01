@@ -111,6 +111,10 @@ ollama_models/
 # Open WebUI data
 open-webui-data/
 
+# Uploads directory (temporary files)
+uploads/
+nestjs-api/uploads/
+
 # Backup files
 *.bak
 *.backup
