@@ -4,11 +4,83 @@ A Retrieval-Augmented Generation (RAG) chatbot system built with NestJS, Ollama,
 
 ## Architecture
 
+### System Overview
+
+The system follows a microservices architecture using Docker Compose:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    User Interface Layer                      │
+│              Open WebUI (Port 3080)                          │
+└────────────────────┬────────────────────────────────────────┘
+                     │ HTTP (OpenAI-compatible API)
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 NestJS API (Port 3000)                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │ File Upload  │  │ Text Process │  │ RAG Chat     │    │
+│  │ & Processing │  │ & Chunking    │  │ Service      │    │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘    │
+│         │                  │                  │              │
+│  ┌──────▼───────┐  ┌──────▼───────┐  ┌──────▼───────┐    │
+│  │ PDF Extract  │  │ Text Chunking │  │ Embeddings   │    │
+│  │ Audio Trans. │  │ (with overlap)│  │ Generation   │    │
+│  │ Video Process│  │               │  │              │    │
+│  └──────────────┘  └───────────────┘  └──────┬───────┘    │
+└───────────────────────────────────────────────┼───────────┘
+                                                 │
+                    ┌───────────────────────────┼───────────┐
+                    │                           │             │
+                    ▼                           ▼             ▼
+         ┌──────────────┐            ┌──────────────┐  ┌──────────────┐
+         │   Qdrant     │            │   Ollama     │  │ Hugging Face │
+         │ (Vector DB)  │            │   (LLM &     │  │   Whisper    │
+         │  Port 6333   │            │ Embeddings)  │  │  (Local ASR) │
+         └──────────────┘            │  Port 11434  │  └──────────────┘
+                                     └──────────────┘
+```
+
+### Components
+
 - **NestJS API**: Text processing, chunking, embedding, and RAG chat service
 - **Ollama**: Local LLM for embeddings and chat completions (OpenAI-compatible API)
 - **Qdrant**: Vector database for semantic search
 - **Open WebUI**: Simple, user-friendly web UI for chatting with the RAG system
 - **Docker**: Containerization for all services
+
+### Processing Pipeline
+
+```
+┌─────────┐
+│ Upload  │ → File saved to disk (streaming for large files)
+└────┬────┘
+     │
+     ▼
+┌─────────────┐
+│ Extraction  │ → Text/PDF: direct extraction
+│             │   Audio/Video: transcription via Whisper
+└────┬────────┘
+     │
+     ▼
+┌───────────┐
+│ Chunking  │ → Text split into overlapping chunks with metadata
+└────┬──────┘
+     │
+     ▼
+┌────────────┐
+│ Embedding  │ → Each chunk converted to vector embeddings
+└────┬───────┘
+     │
+     ▼
+┌───────────┐
+│ Storage   │ → Embeddings stored in Qdrant with metadata
+└────┬──────┘
+     │
+     ▼
+┌─────────┐
+│ Query   │ → User query → Embedding → Search → RAG → Response
+└─────────┘
+```
 
 ## Prerequisites
 
