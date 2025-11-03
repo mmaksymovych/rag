@@ -1,6 +1,6 @@
 # RAG Chatbot System
 
-A Retrieval-Augmented Generation (RAG) chatbot system built with NestJS, Ollama, and Qdrant that processes multiple document types (text, PDF, audio, video) and enables semantic search through a vector database.
+A Retrieval-Augmented Generation (RAG) chatbot system built with NestJS, Ollama, and Qdrant that processes PDF and video files and enables semantic search through a vector database.
 
 ## Architecture
 
@@ -24,8 +24,8 @@ The system follows a microservices architecture using Docker Compose:
 │         │                  │                  │              │
 │  ┌──────▼───────┐  ┌──────▼───────┐  ┌──────▼───────┐    │
 │  │ PDF Extract  │  │ Text Chunking │  │ Embeddings   │    │
-│  │ Audio Trans. │  │ (with overlap)│  │ Generation   │    │
-│  │ Video Process│  │               │  │              │    │
+│  │ Video Trans. │  │ (with overlap)│  │ Generation   │    │
+│  │              │  │               │  │              │    │
 │  └──────────────┘  └───────────────┘  └──────┬───────┘    │
 └───────────────────────────────────────────────┼───────────┘
                                                  │
@@ -57,8 +57,8 @@ The system follows a microservices architecture using Docker Compose:
      │
      ▼
 ┌─────────────┐
-│ Extraction  │ → Text/PDF: direct extraction
-│             │   Audio/Video: transcription via Whisper
+│ Extraction  │ → PDF: direct text extraction
+│             │   Video: audio extraction → transcription via Whisper
 └────┬────────┘
      │
      ▼
@@ -109,10 +109,9 @@ The system follows a microservices architecture using Docker Compose:
 
 4. **Test the system:**
    ```bash
-   # Submit text for processing
-   curl -X POST http://localhost:3000/text/submit \
-     -H "Content-Type: application/json" \
-     -d '{"text": "Your text content here", "metadata": {"title": "Test Document"}}'
+   # Upload a PDF file
+   curl -X POST http://localhost:3000/file/upload/pdf \
+     -F "file=@document.pdf"
 
    # Chat with the system
    curl -X POST http://localhost:3000/chat \
@@ -123,10 +122,8 @@ The system follows a microservices architecture using Docker Compose:
 ## Features
 
 ### Document Processing
-- **Text**: Direct text input with metadata
-- **PDF**: Automatic text extraction
-- **Audio**: Local transcription using Hugging Face Whisper models (no API key needed)
-- **Video**: Audio extraction and transcription
+- **PDF**: Automatic text extraction from PDF documents
+- **Video**: Audio extraction and transcription using local Hugging Face Whisper models (no API key needed)
 
 ### Intelligent Text Chunking
 - Configurable chunk size (default: 1000 chars)
@@ -150,14 +147,8 @@ The system follows a microservices architecture using Docker Compose:
 
 ## API Endpoints
 
-### Text Processing
-- `POST /text/submit` - Submit text for embedding
-- `GET /text` - List stored text chunks
-- `DELETE /text/:sourceId` - Remove text from vector DB
-
 ### File Processing
 - `POST /file/upload/pdf` - Upload and process PDF file
-- `POST /file/upload/audio` - Upload and transcribe audio file
 - `POST /file/upload/video` - Upload and process video file (extracts audio, transcribes, and embeds)
 
 ### Chat
@@ -184,11 +175,6 @@ OLLAMA_TIMEOUT_SECONDS=600
 QDRANT_URL=http://qdrant:6333
 QDRANT_COLLECTION_NAME=text_chunks
 
-# Text Processing
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=100
-MAX_TEXT_LENGTH=100000
-
 # File Upload
 UPLOAD_DIR=/app/uploads
 
@@ -207,12 +193,6 @@ WHISPER_MODEL=Xenova/whisper-small
 ```bash
 curl -X POST http://localhost:3000/file/upload/pdf \
   -F "file=@document.pdf"
-```
-
-### Upload an Audio File
-```bash
-curl -X POST http://localhost:3000/file/upload/audio \
-  -F "file=@recording.mp3"
 ```
 
 ### Upload a Video File
@@ -237,16 +217,12 @@ Open http://localhost:3080 in your browser and start chatting with the RAG syste
 - **MIME Type:** `application/pdf`
 - **Max Size:** 50 MB
 - **Library:** `pdf-parse`
-
-### Audio
-- **Supported Formats:** MP3, WAV, WebM, OGG, M4A
-- **Max Size:** 50 MB
-- **Transcription:** Local Hugging Face Whisper (default) or OpenAI Whisper API (optional)
+- **Processing:** Direct text extraction from PDF documents
 
 ### Video
 - **Supported Formats:** MP4, MPEG, QuickTime, AVI, WebM, MKV, OGG
 - **Max Size:** 1 GB
-- **Processing:** Video → Audio extraction (FFmpeg) → Transcription → Embedding
+- **Processing:** Video → Audio extraction (FFmpeg) → Transcription (Whisper) → Embedding
 
 ## Development
 
@@ -272,7 +248,7 @@ npm run start:dev
 - Check API logs: `docker-compose logs nestjs-api`
 - Verify environment variables are set correctly
 
-### Audio transcription issues
+### Video transcription issues
 - Ensure FFmpeg is installed in the container
 - Check Hugging Face model cache: `ls -lh huggingface_cache/`
 - For local Whisper failures, check logs for specific error messages
@@ -284,7 +260,7 @@ npm run start:dev
 
 ## Documentation
 
-- [Local Whisper Setup](./LOCAL_WHISPER_SETUP.md) - Configuration for local audio transcription
+- [Local Whisper Setup](./LOCAL_WHISPER_SETUP.md) - Configuration for local video transcription
 - [Project Review](./NOTION_REVIEW.md) - Comprehensive project documentation and review
 - [Requirements](./requirements.txt) - Complete list of dependencies
 
