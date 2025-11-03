@@ -62,6 +62,7 @@ This phase implements the core functionality for text processing and RAG chat vi
 #### File Processing
 - `POST /file/upload/pdf` - Upload and process PDF file
 - `POST /file/upload/audio` - Upload and transcribe audio file
+- `POST /file/upload/video` - Upload and process video file (extracts audio, transcribes, and embeds)
 
 #### Chat
 - `POST /chat` - RAG-enhanced chat (custom format)
@@ -165,7 +166,7 @@ curl -X POST http://localhost:3000/file/upload/pdf -F "file=@document.pdf"
 curl -X POST http://localhost:3000/file/upload/audio -F "file=@recording.mp3"
 ```
 
-**Note:** Audio transcription requires an OpenAI API key. Configure it in `docker-compose.yml` as `OPENAI_API_KEY`.
+**Note:** Audio/video transcription uses **local Hugging Face Whisper models** by default (no API key needed!). Falls back to OpenAI API if configured. See [LOCAL_WHISPER_SETUP.md](./LOCAL_WHISPER_SETUP.md) for details.
 
 ## License
 

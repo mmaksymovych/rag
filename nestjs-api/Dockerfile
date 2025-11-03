@@ -1,8 +1,11 @@
-# Use Node.js 20 Alpine as base image
-FROM node:20-alpine
+# Use Node.js 20 Debian-based image for better compatibility with ONNX runtime
+FROM node:20-slim
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install curl for health checks, ffmpeg for video processing, and dependencies for ONNX runtime
+RUN apt-get update && apt-get install -y \
+    curl \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app

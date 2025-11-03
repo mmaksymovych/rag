@@ -127,19 +127,26 @@ Answer:`;
         const modelName = this.configService.get<string>('OLLAMA_CHAT_MODEL', 'llama3:8b');
         const promptLength = prompt.length;
         
-        console.log(`[ChatService] Generating LLM response - Model: ${modelName}, Prompt length: ${promptLength} chars`);
+        // Get timeout from config (in seconds), default to 10 minutes (600s), 0 means no timeout
+        const timeoutSeconds = parseInt(this.configService.get<string>('OLLAMA_TIMEOUT_SECONDS', '600'), 10);
+        
+        console.log(`[ChatService] Generating LLM response - Model: ${modelName}, Prompt length: ${promptLength} chars, Timeout: ${timeoutSeconds > 0 ? `${timeoutSeconds}s` : 'disabled'}`);
         
         try {
-            // Create request with timeout using AbortController
+            // Create request with optional timeout using AbortController
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                console.error(`[ChatService] LLM request timeout after 90s - Model: ${modelName}`);
-                controller.abort();
-            }, 90000); // 90 second timeout
+            let timeoutId: NodeJS.Timeout | null = null;
+            
+            if (timeoutSeconds > 0) {
+                timeoutId = setTimeout(() => {
+                    console.error(`[ChatService] LLM request timeout after ${timeoutSeconds}s - Model: ${modelName}`);
+                    controller.abort();
+                }, timeoutSeconds * 1000);
+            }
             
             try {
                 const llmCallStart = Date.now();
-                console.log(`[ChatService] Sending request to Ollama - Model: ${modelName}, Prompt length: ${promptLength} chars, Max tokens: 400`);
+                console.log(`[ChatService] Sending request to Ollama - Model: ${modelName}, Prompt length: ${promptLength} chars, Max tokens: 2048`);
                 
                 const response = await this.openai.chat.completions.create({
                     model: modelName,
@@ -150,12 +157,14 @@ Answer:`;
                         },
                     ],
                     temperature: 0.7,
-                    max_tokens: 400, // Reduced for faster responses
+                    max_tokens: 2048, // Increased token limit for better responses
                 }, {
-                    signal: controller.signal,
+                    signal: timeoutId ? controller.signal : undefined, // Only set signal if timeout is enabled
                 });
                 
-                clearTimeout(timeoutId);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
                 const llmCallDuration = Date.now() - llmCallStart;
                 
                 // Log full response structure for debugging
@@ -194,12 +203,14 @@ Answer:`;
                 
                 return content;
             } catch (error) {
-                clearTimeout(timeoutId);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
                 const totalDuration = Date.now() - startTime;
                 
-                if (error.name === 'AbortError') {
-                    console.error(`[ChatService] LLM request aborted (timeout) after ${totalDuration}ms`);
-                    throw new Error('Request timeout: Model took too long to respond');
+                if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+                    console.error(`[ChatService] LLM request aborted (timeout after ${timeoutSeconds}s) after ${totalDuration}ms`);
+                    throw new Error(`Request timeout: Model took too long to respond (exceeded ${timeoutSeconds}s limit)`);
                 }
                 
                 console.error(`[ChatService] LLM request failed after ${totalDuration}ms:`, error.message);

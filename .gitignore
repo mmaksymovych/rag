@@ -111,6 +111,9 @@ ollama_models/
 # Open WebUI data
 open-webui-data/
 
+# Hugging Face model cache
+huggingface_cache/
+
 # Uploads directory (temporary files)
 uploads/
 nestjs-api/uploads/

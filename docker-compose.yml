@@ -31,12 +31,20 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
       - OLLAMA_CHAT_MODEL=llama3:8b
+      - OLLAMA_TIMEOUT_SECONDS=600
+      # Set to 0 to disable timeout completely (not recommended for production)
+      # - OLLAMA_TIMEOUT_SECONDS=0
       - UPLOAD_DIR=/app/uploads
-      # Optional: Configure OpenAI API key for audio transcription
+      # Local Whisper configuration (no API key needed!)
+      - USE_LOCAL_WHISPER=true
+      - WHISPER_MODEL=Xenova/whisper-small
+      # Optional: Fallback to OpenAI Whisper API if local fails
       # - OPENAI_API_KEY=your-openai-api-key
       # - OPENAI_BASE_URL=https://api.openai.com/v1
     volumes:
       - ./nestjs-api/uploads:/app/uploads
+      # Cache Hugging Face models (downloads on first use)
+      - ./huggingface_cache:/root/.cache/huggingface
     restart: unless-stopped
 
   open-webui:
