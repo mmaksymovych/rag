@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   qdrant:
     image: qdrant/qdrant:latest
@@ -68,6 +66,7 @@ services:
       # Disable follow-up questions
       - ENABLE_FOLLOW_UP_GENERATION=false
     restart: unless-stopped
+
 
 networks:
   default:

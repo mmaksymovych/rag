@@ -1,0 +1,11 @@
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "description": "Test project with vulnerable package for SCA agent testing",
+  "main": "index.js",
+  "dependencies": {
+    "lodash": "4.17.15"
+  },
+  "devDependencies": {}
+}
+
