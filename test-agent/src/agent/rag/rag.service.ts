@@ -45,7 +45,7 @@ export class RagService {
           topK,
         },
         {
-          timeout: 30000,
+          timeout: 120000, // Increased to 120 seconds (2 minutes)
         },
       );
 
@@ -177,7 +177,7 @@ This e2e test file was automatically generated and covers the ${method} ${endpoi
           topK: 1,
         },
         {
-          timeout: 30000,
+          timeout: 120000, // Increased to 120 seconds (2 minutes)
         },
       );
 
