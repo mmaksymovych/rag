@@ -1,6 +1,7 @@
 import { runReAct } from './react-agent';
 import { createComponentLogger } from '../utils/logger';
 import { reflectionService, ReflectionResult } from '../services/reflection-service';
+import { decisionService, DecisionResult } from '../services/decision-service';
 import chalk from 'chalk';
 
 const logger = createComponentLogger('Agent');
@@ -8,6 +9,7 @@ const logger = createComponentLogger('Agent');
 export interface AgentResponse {
   answer: string;
   responseTime: number;
+  decision?: DecisionResult;
   reflection?: ReflectionResult;
   improvedAnswer?: string;
   improvementIterations?: number;
@@ -19,7 +21,7 @@ export class Agent {
   }
 
   /**
-   * Process a user query with self-reflection and improvement
+   * Process a user query with intelligent routing, self-reflection and improvement
    */
   async processQuery(query: string): Promise<AgentResponse> {
     const startTime = Date.now();
@@ -30,10 +32,19 @@ export class Agent {
     });
 
     try {
-      console.log(chalk.cyan('\n[REACT MODE] Processing query...'));
+      // Step 0: Intelligent routing decision
+      const decision = await decisionService.makeDecision(query);
 
-      // Step 1: Use ReAct agent to generate initial answer
-      let answer = await runReAct(query);
+      let answer: string;
+
+      if (decision.decision === 'direct_llm') {
+        // Answer directly with LLM (no tools)
+        answer = await decisionService.answerDirectly(query);
+      } else {
+        // Use ReAct agent with tools
+        console.log(chalk.cyan('\n[REACT MODE] Processing query with tools...'));
+        answer = await runReAct(query);
+      }
 
       // Step 2: Self-reflection - evaluate the answer
       console.log(chalk.cyan('\n[SELF-REFLECTION] Evaluating answer quality...'));
@@ -103,8 +114,9 @@ export class Agent {
 
       const responseTime = Date.now() - startTime;
 
-      logger.info('Query processed with reflection', {
+      logger.info('Query processed with routing and reflection', {
         responseTime,
+        decision: decision.decision,
         answerLength: answer.length,
         overallScore: reflection.scores.overallScore,
         improvementIterations,
@@ -113,6 +125,7 @@ export class Agent {
       return {
         answer,
         responseTime,
+        decision,
         reflection,
         improvedAnswer,
         improvementIterations,
@@ -132,17 +145,20 @@ export class Agent {
    * Get agent description
    */
   getDescription(): string {
-    return `I am a ReAct-style agent with self-reflection and self-improvement capabilities.
+    return `I am an intelligent ReAct-style agent with routing, self-reflection, and self-improvement capabilities.
+
+My workflow:
+1. Intelligent Routing: Decide whether to answer directly or use tools
+2. Answer Generation: Use appropriate method (direct LLM or ReAct with tools)
+3. Self-Reflection: Evaluate answer quality (accuracy, relevance, clarity, completeness)
+4. Self-Improvement: Iteratively improve if quality is below 75% (up to 2 iterations)
 
 Available tools:
 - getWeather: Get weather information for any city
 - analyzeProject: Analyze the agent-service project repository
+- queryRAG: Query knowledge base for technical documentation and stored information
 
-After generating an answer, I:
-1. Self-reflect: Evaluate my answer on accuracy, relevance, clarity, and completeness
-2. Self-improve: If quality is below 75%, I iteratively improve my answer (up to 2 iterations)
-
-Type your question and I'll use the appropriate tool to help you!`;
+Type your question and I'll intelligently route it to the best processing method!`;
   }
 
 }
