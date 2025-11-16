@@ -119,9 +119,7 @@ describe('Users Endpoint (e2e)', () => {
         ],
       }).compile();
 
-      const newService = module.get<TestGeneratorService>(
-        TestGeneratorService,
-      );
+      const newService = module.get<TestGeneratorService>(TestGeneratorService);
 
       const result = await newService.generateTestSuite(
         missingTest,
@@ -148,7 +146,8 @@ describe('Users Endpoint (e2e)', () => {
         summary: 'Get all users',
       };
 
-      const mockTestCodeWithMarkdown = '```typescript\nimport request from \'supertest\';\n```';
+      const mockTestCodeWithMarkdown =
+        "```typescript\nimport request from 'supertest';\n```";
 
       const mockLLMResponse = {
         content: mockTestCodeWithMarkdown,
@@ -181,9 +180,7 @@ describe('Users Endpoint (e2e)', () => {
         ],
       }).compile();
 
-      const newService = module.get<TestGeneratorService>(
-        TestGeneratorService,
-      );
+      const newService = module.get<TestGeneratorService>(TestGeneratorService);
 
       const result = await newService.generateTestSuite(
         missingTest,
@@ -197,4 +194,3 @@ describe('Users Endpoint (e2e)', () => {
     });
   });
 });
-

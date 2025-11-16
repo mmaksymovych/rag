@@ -9,12 +9,13 @@ export class RagService {
 
   constructor(private readonly configService: ConfigService) {
     this.ragApiUrl =
-      this.configService.get<string>('RAG_API_URL') ||
-      'http://localhost:3000';
+      this.configService.get<string>('RAG_API_URL') || 'http://localhost:3000';
   }
 
   async queryExistingTests(endpoint: string): Promise<string> {
-    this.logger.log(`Querying RAG for existing tests for endpoint: ${endpoint}`);
+    this.logger.log(
+      `Querying RAG for existing tests for endpoint: ${endpoint}`,
+    );
     const query = `What e2e tests exist for the endpoint ${endpoint}? Provide test file names, test patterns, and code examples if available.`;
     const result = await this.queryRag(query);
     this.logger.debug(
@@ -52,10 +53,7 @@ export class RagService {
       this.logger.log(`RAG query completed, response length: ${result.length}`);
       return result;
     } catch (error: any) {
-      this.logger.error(
-        `Error querying RAG: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error querying RAG: ${error.message}`, error.stack);
       // Return empty string instead of throwing to allow workflow to continue
       return '';
     }
@@ -104,7 +102,9 @@ This test file covers the ${method} ${endpoint} endpoint with comprehensive e2e 
       );
 
       // Upload as text to RAG system using /text/submit endpoint
-      this.logger.debug(`Submitting to RAG endpoint: ${this.ragApiUrl}/text/submit`);
+      this.logger.debug(
+        `Submitting to RAG endpoint: ${this.ragApiUrl}/text/submit`,
+      );
       const response = await axios.post(
         `${this.ragApiUrl}/text/submit`,
         {
@@ -136,7 +136,12 @@ This test file covers the ${method} ${endpoint} endpoint with comprehensive e2e 
         error.stack,
       );
       // Try alternative method - upload as file if text endpoint doesn't exist
-      return this.addTestToRagAlternative(testFileName, testContent, endpoint, method);
+      return this.addTestToRagAlternative(
+        testFileName,
+        testContent,
+        endpoint,
+        method,
+      );
     }
   }
 
@@ -188,4 +193,3 @@ This e2e test file was automatically generated and covers the ${method} ${endpoi
     }
   }
 }
-

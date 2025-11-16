@@ -77,7 +77,9 @@ describe('GapAnalysisService', () => {
       const mockTestPatterns = 'Test patterns: describe blocks, it blocks';
 
       mockOpenApiService.getEndpoints.mockResolvedValue(mockEndpoints);
-      mockRagService.getAllExistingTestFiles.mockResolvedValue(mockExistingTests);
+      mockRagService.getAllExistingTestFiles.mockResolvedValue(
+        mockExistingTests,
+      );
       mockRagService.queryTestPatterns.mockResolvedValue(mockTestPatterns);
 
       const mockLLMResponse = {
@@ -200,16 +202,16 @@ describe('GapAnalysisService', () => {
         summary: 'Get all users',
       };
 
-      mockOpenApiService.getEndpointByPathAndMethod.mockResolvedValue(mockEndpoint);
+      mockOpenApiService.getEndpointByPathAndMethod.mockResolvedValue(
+        mockEndpoint,
+      );
 
       const result = await service.getEndpointDetails('/users', 'GET');
 
       expect(result).toEqual(mockEndpoint);
-      expect(mockOpenApiService.getEndpointByPathAndMethod).toHaveBeenCalledWith(
-        '/users',
-        'GET',
-      );
+      expect(
+        mockOpenApiService.getEndpointByPathAndMethod,
+      ).toHaveBeenCalledWith('/users', 'GET');
     });
   });
 });
-

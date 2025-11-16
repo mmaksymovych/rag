@@ -272,10 +272,7 @@ Return ONLY valid JSON, no additional text.`;
 
       return reflection;
     } catch (error: any) {
-      this.logger.error(
-        `LLM reflection failed: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`LLM reflection failed: ${error.message}`, error.stack);
       return this.getDefaultReflectionResult(failureAnalysis);
     }
   }
@@ -301,4 +298,3 @@ Return ONLY valid JSON, no additional text.`;
     return this.maxRetries;
   }
 }
-

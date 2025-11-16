@@ -67,7 +67,9 @@ export class OpenApiService {
       return endpoints;
     }
 
-    this.logger.debug(`Processing ${Object.keys(spec.paths).length} paths from OpenAPI spec`);
+    this.logger.debug(
+      `Processing ${Object.keys(spec.paths).length} paths from OpenAPI spec`,
+    );
 
     for (const [path, pathItem] of Object.entries(spec.paths)) {
       if (typeof pathItem !== 'object' || pathItem === null) {
@@ -75,7 +77,15 @@ export class OpenApiService {
         continue;
       }
 
-      const methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'];
+      const methods = [
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'options',
+        'head',
+      ];
       for (const method of methods) {
         if (pathItem[method]) {
           const operation = pathItem[method];
@@ -116,4 +126,3 @@ export class OpenApiService {
     );
   }
 }
-

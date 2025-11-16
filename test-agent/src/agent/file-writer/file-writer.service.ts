@@ -84,9 +84,7 @@ export class FileWriterService {
         return;
       }
 
-      this.logger.warn(
-        `ESLint formatting had issues: ${error.message}`,
-      );
+      this.logger.warn(`ESLint formatting had issues: ${error.message}`);
       this.logger.debug(`ESLint stderr: ${error.stderr?.substring(0, 200)}`);
       // Don't throw - file was written, formatting is optional
     }
@@ -113,4 +111,3 @@ export class FileWriterService {
     return existsSync(filePath);
   }
 }
-

@@ -46,10 +46,13 @@ export class GapAnalysisService {
     this.logger.log(`Found ${endpoints.length} endpoints in OpenAPI spec`);
     this.logger.debug(
       `Endpoints by method: ${JSON.stringify(
-        endpoints.reduce((acc, ep) => {
-          acc[ep.method] = (acc[ep.method] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        endpoints.reduce(
+          (acc, ep) => {
+            acc[ep.method] = (acc[ep.method] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
       )}`,
     );
 
@@ -97,9 +100,10 @@ export class GapAnalysisService {
       .map((ep) => `${ep.method} ${ep.path} (${ep.summary || 'No summary'})`)
       .join('\n');
 
-    const existingTestsSummary = existingTestFiles.length > 0
-      ? existingTestFiles.join(', ')
-      : 'No existing test files found';
+    const existingTestsSummary =
+      existingTestFiles.length > 0
+        ? existingTestFiles.join(', ')
+        : 'No existing test files found';
 
     const prompt = `You are analyzing an API to identify which endpoints are missing e2e tests.
 
@@ -173,8 +177,10 @@ Return ONLY valid JSON, no additional text.`;
     }
   }
 
-  async getEndpointDetails(endpoint: string, method: string): Promise<EndpointInfo | null> {
+  async getEndpointDetails(
+    endpoint: string,
+    method: string,
+  ): Promise<EndpointInfo | null> {
     return this.openApiService.getEndpointByPathAndMethod(endpoint, method);
   }
 }
-

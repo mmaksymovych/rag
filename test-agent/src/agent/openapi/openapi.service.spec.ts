@@ -163,7 +163,10 @@ describe('OpenApiService', () => {
 
       mockedAxios.get.mockResolvedValueOnce({ data: mockSpec });
 
-      const endpoint = await service.getEndpointByPathAndMethod('/users', 'GET');
+      const endpoint = await service.getEndpointByPathAndMethod(
+        '/users',
+        'GET',
+      );
 
       expect(endpoint).not.toBeNull();
       expect(endpoint?.path).toBe('/users');
@@ -184,10 +187,12 @@ describe('OpenApiService', () => {
 
       mockedAxios.get.mockResolvedValueOnce({ data: mockSpec });
 
-      const endpoint = await service.getEndpointByPathAndMethod('/posts', 'GET');
+      const endpoint = await service.getEndpointByPathAndMethod(
+        '/posts',
+        'GET',
+      );
 
       expect(endpoint).toBeNull();
     });
   });
 });
-

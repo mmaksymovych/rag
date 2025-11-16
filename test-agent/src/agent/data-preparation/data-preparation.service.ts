@@ -38,7 +38,9 @@ export class DataPreparationService {
     existingTestExamples: string,
   ): Promise<PreparedContext> {
     this.logger.log('Starting data preparation and contextualization');
-    this.logger.log(`Processing ${endpoints.length} endpoints, ${missingTests.length} missing tests`);
+    this.logger.log(
+      `Processing ${endpoints.length} endpoints, ${missingTests.length} missing tests`,
+    );
 
     // Validate input data
     this.logger.log('Step 1: Validating input data');
@@ -46,7 +48,10 @@ export class DataPreparationService {
 
     // Enrich endpoint information
     this.logger.log('Step 2: Enriching endpoint information');
-    const enrichedEndpoints = await this.enrichEndpoints(endpoints, missingTests);
+    const enrichedEndpoints = await this.enrichEndpoints(
+      endpoints,
+      missingTests,
+    );
 
     // Calculate API metadata
     this.logger.log('Step 3: Calculating API metadata');
@@ -91,9 +96,7 @@ export class DataPreparationService {
     }
 
     // Validate endpoint structure
-    const invalidEndpoints = endpoints.filter(
-      (ep) => !ep.path || !ep.method,
-    );
+    const invalidEndpoints = endpoints.filter((ep) => !ep.path || !ep.method);
     if (invalidEndpoints.length > 0) {
       this.logger.warn(
         `Found ${invalidEndpoints.length} endpoints with missing path or method`,
@@ -214,7 +217,9 @@ export class DataPreparationService {
     if (endpoint.method === 'GET') return 'high';
 
     // CRUD operations are high priority
-    if (endpoint.tags?.some((tag) => ['users', 'api'].includes(tag.toLowerCase()))) {
+    if (
+      endpoint.tags?.some((tag) => ['users', 'api'].includes(tag.toLowerCase()))
+    ) {
       return 'high';
     }
 
@@ -317,7 +322,7 @@ export class DataPreparationService {
 
     // Clean up the patterns
     let cleaned = testPatterns.trim();
-    
+
     // Remove excessive whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
@@ -391,4 +396,3 @@ export class DataPreparationService {
     };
   }
 }
-

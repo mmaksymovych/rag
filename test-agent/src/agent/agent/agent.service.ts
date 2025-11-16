@@ -1,11 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenApiService, EndpointInfo } from '../openapi/openapi.service';
 import { RagService } from '../rag/rag.service';
-import { GapAnalysisService, MissingTest } from '../gap-analysis/gap-analysis.service';
-import { DataPreparationService, PreparedContext } from '../data-preparation/data-preparation.service';
+import {
+  GapAnalysisService,
+  MissingTest,
+} from '../gap-analysis/gap-analysis.service';
+import {
+  DataPreparationService,
+  PreparedContext,
+} from '../data-preparation/data-preparation.service';
 import { ReflectionService } from '../reflection/reflection.service';
 import { TestGeneratorService } from '../test-generator/test-generator.service';
-import { TestRunnerService, TestResult } from '../test-runner/test-runner.service';
+import {
+  TestRunnerService,
+  TestResult,
+} from '../test-runner/test-runner.service';
 import { FileWriterService } from '../file-writer/file-writer.service';
 
 export interface GenerationResult {
@@ -67,10 +76,13 @@ export class AgentService {
       // Step 2: Find missing tests
       this.logger.log('Step 2: Analyzing gaps to find missing tests');
       const missingTests = await this.gapAnalysisService.findMissingTests();
-      this.logger.log(`Found ${missingTests.length} endpoints with missing tests`);
+      this.logger.log(
+        `Found ${missingTests.length} endpoints with missing tests`,
+      );
 
       if (missingTests.length === 0) {
-        result.message = 'No missing tests found. All endpoints have test coverage.';
+        result.message =
+          'No missing tests found. All endpoints have test coverage.';
         return result;
       }
 
@@ -105,7 +117,11 @@ export class AgentService {
           );
           result.generatedTests.push(generatedTest);
 
-          if (!generatedTest.testGenerated || !generatedTest.testPassed || !generatedTest.isStable) {
+          if (
+            !generatedTest.testGenerated ||
+            !generatedTest.testPassed ||
+            !generatedTest.isStable
+          ) {
             result.success = false;
             if (generatedTest.error) {
               result.errors?.push(
@@ -188,13 +204,15 @@ export class AgentService {
 
     // Find enriched endpoint info
     const enrichedEndpoint = preparedContext.endpoints.find(
-      (ep) => ep.path === missingTest.endpoint && ep.method === missingTest.method,
+      (ep) =>
+        ep.path === missingTest.endpoint && ep.method === missingTest.method,
     );
 
     const maxRetries = this.reflectionService.getMaxRetries();
     let testCode = '';
     let fileName = '';
-    let writeResult: { success: boolean; path: string; error?: string } | null = null;
+    let writeResult: { success: boolean; path: string; error?: string } | null =
+      null;
     let testResult: TestResult | null = null;
     let attemptNumber = 0;
     let lastReflection: any = null;
@@ -233,9 +251,9 @@ export class AgentService {
           testCode,
         );
 
-        if (!writeResult.success) {
+        if (!writeResult || !writeResult.success) {
           throw new Error(
-            `Failed to write test file: ${writeResult.error || 'Unknown error'}`,
+            `Failed to write test file: ${writeResult?.error || 'Unknown error'}`,
           );
         }
 
@@ -321,14 +339,19 @@ export class AgentService {
       return {
         endpoint: missingTest.endpoint,
         method: missingTest.method,
-        fileName: fileName || this.testGeneratorService.generateTestFileName(missingTest.endpoint),
+        fileName:
+          fileName ||
+          this.testGeneratorService.generateTestFileName(missingTest.endpoint),
         filePath: writeResult?.path || '',
         testGenerated: !!testCode,
         testPassed: false,
         isStable: false,
         stabilityRuns: 0,
         totalAttempts: attemptNumber,
-        error: testResult?.output || lastReflection?.analysis || 'Test generation failed',
+        error:
+          testResult?.output ||
+          lastReflection?.analysis ||
+          'Test generation failed',
       };
     }
 
@@ -450,26 +473,29 @@ export class AgentService {
             );
 
             try {
-              const enrichedEndpoint = await this.gapAnalysisService.getEndpointDetails(
-                missingTest.endpoint,
-                missingTest.method,
-              );
+              const enrichedEndpoint =
+                await this.gapAnalysisService.getEndpointDetails(
+                  missingTest.endpoint,
+                  missingTest.method,
+                );
 
               if (enrichedEndpoint) {
                 // Get fresh context for regeneration
                 const testPatterns = await this.ragService.queryTestPatterns();
-                const existingTestExamples = await this.getExistingTestExamples();
+                const existingTestExamples =
+                  await this.getExistingTestExamples();
 
                 // Regenerate with stability-focused improvements
                 const stabilityPrompt = `${reflection.updatedPrompt}\n\nIMPORTANT: This test failed on a subsequent run, indicating non-deterministic behavior. Ensure the test is stable and handles timing, async operations, and potential race conditions properly.`;
 
-                currentTestCode = await this.testGeneratorService.generateTestSuite(
-                  missingTest,
-                  enrichedEndpoint,
-                  existingTestExamples,
-                  testPatterns,
-                  stabilityPrompt,
-                );
+                currentTestCode =
+                  await this.testGeneratorService.generateTestSuite(
+                    missingTest,
+                    enrichedEndpoint,
+                    existingTestExamples,
+                    testPatterns,
+                    stabilityPrompt,
+                  );
 
                 // Rewrite the test file
                 const writeResult = await this.fileWriterService.writeTestFile(
@@ -477,9 +503,9 @@ export class AgentService {
                   currentTestCode,
                 );
 
-                if (!writeResult.success) {
+                if (!writeResult || !writeResult.success) {
                   this.logger.error(
-                    `[${missingTest.method} ${missingTest.endpoint}] Failed to rewrite test file: ${writeResult.error}`,
+                    `[${missingTest.method} ${missingTest.endpoint}] Failed to rewrite test file: ${writeResult?.error || 'Unknown error'}`,
                   );
                   break;
                 }
@@ -534,7 +560,9 @@ export class AgentService {
       isStable,
       successfulRuns,
       fixAttempts,
-      error: isStable ? undefined : lastFailure?.output || 'Test failed stability verification',
+      error: isStable
+        ? undefined
+        : lastFailure?.output || 'Test failed stability verification',
     };
   }
 
@@ -545,7 +573,9 @@ export class AgentService {
   ): Promise<GeneratedTest> {
     // Legacy method - kept for backward compatibility
     // This is now handled by generateTestWithReflection
-    throw new Error('This method is deprecated. Use generateTestWithReflection instead.');
+    throw new Error(
+      'This method is deprecated. Use generateTestWithReflection instead.',
+    );
   }
 
   private async getExistingTestExamples(): Promise<string> {
@@ -557,9 +587,10 @@ export class AgentService {
       );
       return examples;
     } catch (error: any) {
-      this.logger.warn(`Failed to get test examples from RAG: ${error.message}`);
+      this.logger.warn(
+        `Failed to get test examples from RAG: ${error.message}`,
+      );
       return '';
     }
   }
 }
-
