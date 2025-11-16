@@ -10,14 +10,16 @@ services:
     environment:
       - QDRANT__SERVICE__HTTP_PORT=6333
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ./ollama_models:/root/.ollama
-    environment:
-      - OLLAMA_HOST=0.0.0.0
+  # Ollama service commented out - using LM Studio instead
+  # LM Studio should be running on the host machine at http://localhost:1234
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ./ollama_models:/root/.ollama
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0
 
   nestjs-api:
     build: ./nestjs-api
@@ -25,15 +27,15 @@ services:
       - "3000:3000"
     depends_on:
       - qdrant
-      - ollama
     environment:
-      - OLLAMA_API_URL=http://ollama:11434/v1
+      # LM Studio connection (running on host)
+      - LM_STUDIO_API_URL=http://host.docker.internal:1234/v1
       - QDRANT_URL=http://qdrant:6333
-      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest
-      - OLLAMA_CHAT_MODEL=llama3:8b
-      - OLLAMA_TIMEOUT_SECONDS=600
+      - LM_STUDIO_EMBEDDING_MODEL=text-embedding-nomic-embed-text-v1.5
+      - LM_STUDIO_CHAT_MODEL=google/gemma-3n-e4b
+      - LM_STUDIO_TIMEOUT_SECONDS=600
       # Set to 0 to disable timeout completely (not recommended for production)
-      # - OLLAMA_TIMEOUT_SECONDS=0
+      # - LM_STUDIO_TIMEOUT_SECONDS=0
       - UPLOAD_DIR=/app/uploads
       # Local Whisper configuration (no API key needed!)
       - USE_LOCAL_WHISPER=true
@@ -54,15 +56,13 @@ services:
       - "3080:8080"
     depends_on:
       - nestjs-api
-      - ollama
     volumes:
       - ./open-webui-data:/app/backend/data
     environment:
-      # Connect to our RAG API instead of directly to Ollama
+      # Connect to our RAG API (which uses LM Studio)
       - ENABLE_OPENAI_API=true
       - OPENAI_API_BASE_URL=http://nestjs-api:3000/v1
       - OPENAI_API_KEY=sk-webui-rag
-      # Optional: Also allow direct Ollama access
       - WEBUI_SECRET_KEY=your-super-secret-key-change-this
       - DEFAULT_MODELS=rag-llama3
       # Disable follow-up questions

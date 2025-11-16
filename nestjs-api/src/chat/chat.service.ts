@@ -24,11 +24,11 @@ export class ChatService {
         private vectorStoreService: VectorStoreService,
         private embeddingService: EmbeddingService,
     ) {
-        const ollamaApiUrl = this.configService.get<string>('OLLAMA_API_URL');
+        const lmStudioApiUrl = this.configService.get<string>('LM_STUDIO_API_URL') || 'http://host.docker.internal:1234/v1';
 
         this.openai = new OpenAI({
-            baseURL: ollamaApiUrl,
-            apiKey: 'ollama', // Ollama doesn't require a real API key
+            baseURL: lmStudioApiUrl,
+            apiKey: 'lm-studio', // LM Studio doesn't require a real API key
         });
     }
 
@@ -79,7 +79,7 @@ export class ChatService {
             const promptLength = prompt.length;
             console.log(`[ChatService] Created RAG prompt - Length: ${promptLength} chars`);
 
-            // Generate response using Ollama
+            // Generate response using LM Studio
             console.log(`[ChatService] Step 4/4: Generating LLM response...`);
             const llmStart = Date.now();
             const response = await this.generateResponse(prompt);
@@ -120,15 +120,15 @@ Answer:`;
     }
 
     /**
-     * Generate response using Ollama
+     * Generate response using LM Studio
      */
     private async generateResponse(prompt: string): Promise<string> {
         const startTime = Date.now();
-        const modelName = this.configService.get<string>('OLLAMA_CHAT_MODEL', 'llama3:8b');
+        const modelName = this.configService.get<string>('LM_STUDIO_CHAT_MODEL', 'google/gemma-3n-e4b');
         const promptLength = prompt.length;
         
         // Get timeout from config (in seconds), default to 10 minutes (600s), 0 means no timeout
-        const timeoutSeconds = parseInt(this.configService.get<string>('OLLAMA_TIMEOUT_SECONDS', '600'), 10);
+        const timeoutSeconds = parseInt(this.configService.get<string>('LM_STUDIO_TIMEOUT_SECONDS', '600'), 10);
         
         console.log(`[ChatService] Generating LLM response - Model: ${modelName}, Prompt length: ${promptLength} chars, Timeout: ${timeoutSeconds > 0 ? `${timeoutSeconds}s` : 'disabled'}`);
         
@@ -146,7 +146,7 @@ Answer:`;
             
             try {
                 const llmCallStart = Date.now();
-                console.log(`[ChatService] Sending request to Ollama - Model: ${modelName}, Prompt length: ${promptLength} chars, Max tokens: 2048`);
+                console.log(`[ChatService] Sending request to LM Studio - Model: ${modelName}, Prompt length: ${promptLength} chars, Max tokens: 2048`);
                 
                 const response = await this.openai.chat.completions.create({
                     model: modelName,
@@ -168,7 +168,7 @@ Answer:`;
                 const llmCallDuration = Date.now() - llmCallStart;
                 
                 // Log full response structure for debugging
-                console.log(`[ChatService] Ollama response received - Status: OK, Duration: ${llmCallDuration}ms`);
+                console.log(`[ChatService] LM Studio response received - Status: OK, Duration: ${llmCallDuration}ms`);
                 console.log(`[ChatService] Response structure - Choices count: ${response.choices?.length || 0}, Object: ${response.object}, Model: ${response.model}`);
                 
                 if (!response.choices || response.choices.length === 0) {
@@ -232,8 +232,8 @@ Answer:`;
     async getModels(): Promise<any> {
         try {
             return {
-                chat: this.configService.get<string>('OLLAMA_CHAT_MODEL', 'llama3:8b'),
-                embedding: this.configService.get<string>('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text'),
+                chat: this.configService.get<string>('LM_STUDIO_CHAT_MODEL', 'google/gemma-3n-e4b'),
+                embedding: this.configService.get<string>('LM_STUDIO_EMBEDDING_MODEL', 'text-embedding-nomic-embed-text-v1.5'),
             };
         } catch (error) {
             throw new HttpException(

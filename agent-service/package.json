@@ -1,0 +1,38 @@
+{
+    "name": "conversational-agent-service",
+    "version": "1.0.0",
+    "description": "Conversational agent with RAG integration and self-reflection",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node src/index.ts",
+        "test": "echo \"Tests will be added\" && exit 0"
+    },
+    "keywords": [
+        "agent",
+        "rag",
+        "conversational",
+        "ai"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@langchain/core": "^1.0.5",
+        "@langchain/openai": "^1.1.1",
+        "@types/form-data": "^2.2.1",
+        "axios": "^1.6.2",
+        "chalk": "^4.1.2",
+        "dotenv": "^16.3.1",
+        "form-data": "^4.0.4",
+        "langchain": "^1.0.4",
+        "openai": "^4.20.1",
+        "winston": "^3.11.0",
+        "zod": "^4.1.12"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.4",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
+}
