@@ -64,7 +64,7 @@ export class Terminal {
       // Display answer
       console.log(chalk.yellow('\n' + '='.repeat(60)));
       console.log(chalk.bold.white('Agent:'));
-      console.log(chalk.white(this.wrapText(response.answer, 58)));
+      console.log(chalk.red(this.wrapText(response.answer, 58)));
       console.log(chalk.yellow('='.repeat(60)));
 
       // Display metadata
