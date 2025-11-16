@@ -69,6 +69,14 @@ services:
       - ENABLE_FOLLOW_UP_GENERATION=false
     restart: unless-stopped
 
+  openapi-project:
+    build: ./openapi-project
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    restart: unless-stopped
+
 networks:
   default:
     driver: bridge
