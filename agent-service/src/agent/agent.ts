@@ -59,7 +59,8 @@ export class Agent {
   getDescription(): string {
     return `I am a simple ReAct-style agent that can use tools to answer questions.
 
-I have access to a weather tool that can tell you the weather in any city.
+Available tools:
+- getWeather: Get weather information for any city
 
 Type your question and I'll use the appropriate tool to help you!`;
   }

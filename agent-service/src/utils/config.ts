@@ -27,7 +27,7 @@ export interface Config {
 export const config: Config = {
   lmStudio: {
     apiUrl: process.env.LM_STUDIO_API_URL || 'http://localhost:1234/v1',
-    chatModel: process.env.LM_STUDIO_CHAT_MODEL || 'google/gemma-3n-e4b',
+    chatModel: process.env.LM_STUDIO_CHAT_MODEL || 'openai/gpt-oss-20b',
     timeoutSeconds: parseInt(process.env.LM_STUDIO_TIMEOUT_SECONDS || '600', 10),
   },
   rag: {
