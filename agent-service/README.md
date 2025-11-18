@@ -2,6 +2,37 @@
 
 An intelligent conversational agent with ReAct (Reasoning + Acting) architecture, featuring intelligent routing, RAG integration, self-reflection, and self-improvement capabilities.
 
+## Technologies Used
+
+### Core Technologies
+- **TypeScript** - Type-safe development
+- **Node.js** - Runtime environment
+- **LangChain.js** - LLM orchestration and prompt management
+
+### AI/ML Stack
+- **LM Studio** - Local LLM inference server
+  - Chat models: `openai/gpt-oss-20b`, `google/gemma-3-12b`
+  - Embedding model: `nomic-embed-text-v1.5`
+- **Qdrant** - Vector database for embeddings storage
+- **RAG (Retrieval-Augmented Generation)** - Knowledge base integration
+
+### Backend Services
+- **NestJS** - Backend API framework for RAG processing
+- **Docker** - Containerization for NestJS API and Qdrant
+- **Axios** - HTTP client for API communication
+
+### Libraries & Tools
+- **Winston** - Structured logging (file-based)
+- **Chalk** - Terminal styling and colors
+- **Ora** - Terminal loading spinners
+- **Readline** - Interactive CLI interface
+
+### Architecture Patterns
+- **ReAct Pattern** - Reasoning + Acting with iterative tool usage
+- **Self-Reflection** - LLM-based quality evaluation
+- **Self-Improvement** - Iterative answer refinement
+- **Intelligent Routing** - Dynamic decision-making for query handling
+
 ## Features
 
 - **🧠 ReAct Architecture**: Combines reasoning and acting with iterative tool usage
