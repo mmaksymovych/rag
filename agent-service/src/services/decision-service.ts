@@ -33,11 +33,6 @@ export class DecisionService {
       queryPreview: userQuery.substring(0, 100),
     });
 
-    console.log(chalk.cyan('\n╔══════════════════════════════════════════════════════════╗'));
-    console.log(chalk.cyan('║              INTELLIGENT ROUTING DECISION                ║'));
-    console.log(chalk.cyan('╚══════════════════════════════════════════════════════════╝\n'));
-    console.log(chalk.white(`Query: "${userQuery}"\n`));
-
     try {
       const prompt = `You are an intelligent routing system that decides how to handle user queries.
 
@@ -102,24 +97,11 @@ Respond in PURE JSON format (no markdown, no code blocks):
         suggestedTool: decision.suggestedTool,
       });
 
-      // Display decision
-      const decisionColor = decision.decision === 'direct_llm' ? chalk.blue : chalk.magenta;
-      console.log(decisionColor(`Decision: ${decision.decision.toUpperCase()}`));
-      console.log(chalk.gray(`Reasoning: ${decision.reasoning}`));
-      console.log(chalk.gray(`Confidence: ${(decision.confidence * 100).toFixed(0)}%`));
-      if (decision.suggestedTool) {
-        console.log(chalk.yellow(`Suggested Tool: ${decision.suggestedTool}`));
-      }
-      console.log(chalk.gray(`Duration: ${duration}ms\n`));
-
       return decision;
     } catch (error: any) {
       logger.error('Decision making failed', {
         error: error.message,
       });
-
-      console.log(chalk.red(`❌ Decision error: ${error.message}`));
-      console.log(chalk.yellow(`Defaulting to: use_tools\n`));
 
       // Default to using tools if decision fails
       return {
@@ -139,8 +121,6 @@ Respond in PURE JSON format (no markdown, no code blocks):
     logger.info('Answering directly with LLM', {
       queryLength: userQuery.length,
     });
-
-    console.log(chalk.blue('\n[DIRECT LLM MODE] Generating answer...\n'));
 
     try {
       const response = await lmStudioClient.chatCompletion(
@@ -163,8 +143,6 @@ Respond in PURE JSON format (no markdown, no code blocks):
         duration,
         responseLength: response.length,
       });
-
-      console.log(chalk.green(`✅ Direct answer generated in ${(duration / 1000).toFixed(2)}s\n`));
 
       return response;
     } catch (error: any) {

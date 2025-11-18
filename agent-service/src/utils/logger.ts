@@ -42,14 +42,10 @@ const fileFormat = winston.format.combine(
   winston.format.json()
 );
 
-// Create the logger
+// Create the logger (console logging disabled, only file logging)
 export const logger = winston.createLogger({
   level: config.logging.level,
   transports: [
-    // Console transport with colors
-    new winston.transports.Console({
-      format: consoleFormat,
-    }),
     // File transport with JSON
     new winston.transports.File({
       filename: path.join(logsDir, 'agent.log'),

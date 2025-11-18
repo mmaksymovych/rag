@@ -152,17 +152,30 @@ TOOLS:
 IMPORTANT INSTRUCTIONS:
 - When the user asks to "analyze the project", "analyze this codebase", "understand the repository", "explain the architecture", or similar questions about the project structure, you MUST use the analyzeProject tool.
 - When the user asks about weather in a city, use the getWeather tool.
-- Always use tools when appropriate - do not try to answer questions about codebases without using the analyzeProject tool.
+- When the user asks about technical documentation or stored knowledge, use the queryRAG tool.
 - Think step by step before deciding which tool to use.
-- After using a tool, analyze the result and decide if you need to use another tool or provide a final answer.
 
-Use this EXACT format:
+CRITICAL FORMAT RULES:
+You can ONLY respond in TWO ways:
 
-Thought: [your reasoning about what to do]
+OPTION 1 - Call a tool (when you need information):
+Thought: [your reasoning]
 Action: [toolName]
-Action Input: [JSON object with tool parameters]
-Observation: [tool result will appear here]
-Final Answer: [your final answer to the user]
+Action Input: [JSON object]
+
+OPTION 2 - Provide final answer (when you have enough information):
+Final Answer: [your answer to the user]
+
+DO NOT:
+- Write "Observation:" yourself (the system provides this after tool execution)
+- Generate fake observations
+- Include both Action and Final Answer in the same response
+- Call the same tool multiple times with the same input
+
+WORKFLOW:
+1. You provide: Thought + Action + Action Input
+2. System provides: Observation (tool result)
+3. You provide: Final Answer (based on the observation)
 
 Begin!
 
@@ -184,15 +197,6 @@ export async function runReAct(input: string): Promise<string> {
 
     logger.info('Starting ReAct agent', { input: input.substring(0, 100) });
 
-    // Show available tools on first iteration
-    if (state.iteration === 0) {
-        console.log(chalk.cyan('\n╔══════════════════════════════════════════════════════════╗'));
-        console.log(chalk.cyan('║                    REACT AGENT                           ║'));
-        console.log(chalk.cyan('╚══════════════════════════════════════════════════════════╝\n'));
-        console.log(chalk.gray('Available tools:'), Object.keys(reactTools).join(', '));
-        console.log('');
-    }
-
     while (state.iteration < MAX_ITERATIONS) {
         state.iteration++;
 
@@ -212,11 +216,6 @@ export async function runReAct(input: string): Promise<string> {
             const response = await model.invoke(state.messages);
             const responseText = response.content;
 
-            // Log model response
-            console.log(chalk.yellow(`\n[Iteration ${state.iteration}] Model Response:`));
-            console.log(chalk.gray(responseText));
-            console.log('');
-
             // Parse response
             const parsed = parseModelResponse(responseText);
 
@@ -226,7 +225,6 @@ export async function runReAct(input: string): Promise<string> {
                     iterations: state.iteration,
                     duration,
                 });
-                console.log(chalk.green(`\n✅ Final answer received after ${state.iteration} iteration(s)\n`));
                 return parsed.data as string;
             }
 
@@ -244,16 +242,11 @@ export async function runReAct(input: string): Promise<string> {
 
             // Tool call detected
             const toolCall = parsed.data as ToolCall;
-            console.log(chalk.cyan(`\n🔧 Tool Call Detected:`));
-            console.log(chalk.white(`   Tool: ${toolCall.actionName}`));
-            console.log(chalk.gray(`   Input: ${JSON.stringify(toolCall.actionInput, null, 2)}\n`));
 
             // Execute tool
             let toolResult: string;
             try {
                 toolResult = await executeTool(toolCall.actionName, toolCall.actionInput);
-                console.log(chalk.green(`✅ Tool execution complete`));
-                console.log(chalk.gray(`   Result length: ${toolResult.length} characters\n`));
             } catch (error: any) {
                 const errorMessage = `Tool execution failed: ${error.message}`;
                 logger.error('Tool execution error', {

@@ -42,16 +42,11 @@ export class Agent {
         answer = await decisionService.answerDirectly(query);
       } else {
         // Use ReAct agent with tools
-        console.log(chalk.cyan('\n[REACT MODE] Processing query with tools...'));
         answer = await runReAct(query);
       }
 
       // Step 2: Self-reflection - evaluate the answer
-      console.log(chalk.cyan('\n[SELF-REFLECTION] Evaluating answer quality...'));
       const reflection = await reflectionService.evaluateAnswer(query, answer);
-      
-      // Display reflection results
-      reflectionService.displayReflection(reflection);
 
       let improvedAnswer: string | undefined;
       let improvementIterations = 0;
@@ -59,8 +54,6 @@ export class Agent {
 
       // Step 3: Self-improvement - improve if needed
       if (reflection.shouldImprove && reflection.improvementSuggestions) {
-        console.log(chalk.yellow(`\n[SELF-IMPROVEMENT] Attempting to improve answer...\n`));
-        
         let currentAnswer = answer;
         let currentReflection = reflection;
 
@@ -69,8 +62,6 @@ export class Agent {
           currentReflection.shouldImprove
         ) {
           improvementIterations++;
-          
-          console.log(chalk.cyan(`[IMPROVEMENT ITERATION ${improvementIterations}/${maxImprovementIterations}]`));
 
           // Generate improved answer
           const improved = await reflectionService.improveAnswer(
@@ -82,24 +73,18 @@ export class Agent {
 
           // Evaluate the improved answer
           const improvedReflection = await reflectionService.evaluateAnswer(query, improved);
-          
-          console.log(chalk.gray(`  Previous score: ${(currentReflection.scores.overallScore * 100).toFixed(1)}%`));
-          console.log(chalk.gray(`  New score: ${(improvedReflection.scores.overallScore * 100).toFixed(1)}%`));
 
           // Check if improvement is better
           if (improvedReflection.scores.overallScore > currentReflection.scores.overallScore) {
-            console.log(chalk.green(`  ✓ Improvement successful (+${((improvedReflection.scores.overallScore - currentReflection.scores.overallScore) * 100).toFixed(1)}%)\n`));
             currentAnswer = improved;
             currentReflection = improvedReflection;
             improvedAnswer = improved;
           } else {
-            console.log(chalk.yellow(`  ⚠ No improvement, keeping previous answer\n`));
             break;
           }
 
           // If we've reached acceptable quality, stop
           if (!currentReflection.shouldImprove) {
-            console.log(chalk.green(`✓ Answer quality now meets standards!\n`));
             break;
           }
         }
@@ -108,8 +93,6 @@ export class Agent {
         if (improvedAnswer) {
           answer = improvedAnswer;
         }
-      } else {
-        console.log(chalk.green('✓ Initial answer quality is good, no improvement needed\n'));
       }
 
       const responseTime = Date.now() - startTime;

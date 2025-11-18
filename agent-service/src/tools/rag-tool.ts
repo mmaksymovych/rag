@@ -66,12 +66,8 @@ OUTPUT: Returns relevant information from the knowledge base with sources.`,
       console.log(chalk.green(`\n✅ RAG query completed in ${(duration / 1000).toFixed(2)}s`));
       console.log(chalk.gray(`   Response length: ${response.length} characters\n`));
 
-      return JSON.stringify({
-        success: true,
-        answer: response,
-        duration: `${(duration / 1000).toFixed(2)}s`,
-        source: 'RAG Knowledge Base',
-      }, null, 2);
+      // Return a simple, clear response that the LLM can easily understand
+      return `RAG Knowledge Base Result:\n\n${response}\n\nSources: ${ragResponse.sources.join(', ')}`;
     } catch (error: any) {
       const duration = Date.now() - startTime;
       

@@ -154,9 +154,6 @@ Be objective and use the full 0.0-1.0 range. Most answers should be between 0.6-
                 stack: error.stack,
             });
 
-            console.log(chalk.red('\n❌ Evaluation Error:'));
-            console.log(chalk.gray(`   ${error.message}`));
-            console.log(chalk.yellow('   Using heuristic evaluation instead...\n'));
 
             // Fallback: Use heuristic evaluation based on answer characteristics
             const answerLength = agentAnswer.length;
