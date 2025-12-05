@@ -2,36 +2,7 @@
 
 An intelligent conversational agent with ReAct (Reasoning + Acting) architecture, featuring intelligent routing, RAG integration, self-reflection, and self-improvement capabilities.
 
-## Technologies Used
-
-### Core Technologies
-- **TypeScript** - Type-safe development
-- **Node.js** - Runtime environment
-- **LangChain.js** - LLM orchestration and prompt management
-
-### AI/ML Stack
-- **LM Studio** - Local LLM inference server
-  - Chat models: `openai/gpt-oss-20b`, `google/gemma-3-12b`
-  - Embedding model: `nomic-embed-text-v1.5`
-- **Qdrant** - Vector database for embeddings storage
-- **RAG (Retrieval-Augmented Generation)** - Knowledge base integration
-
-### Backend Services
-- **NestJS** - Backend API framework for RAG processing
-- **Docker** - Containerization for NestJS API and Qdrant
-- **Axios** - HTTP client for API communication
-
-### Libraries & Tools
-- **Winston** - Structured logging (file-based)
-- **Chalk** - Terminal styling and colors
-- **Ora** - Terminal loading spinners
-- **Readline** - Interactive CLI interface
-
-### Architecture Patterns
-- **ReAct Pattern** - Reasoning + Acting with iterative tool usage
-- **Self-Reflection** - LLM-based quality evaluation
-- **Self-Improvement** - Iterative answer refinement
-- **Intelligent Routing** - Dynamic decision-making for query handling
+> 📚 **For detailed technical information**, including technologies, architecture patterns, component diagrams, and design details, see **[architecture.mmd](./architecture.mmd)**
 
 ## Features
 
@@ -140,7 +111,35 @@ LOG_LEVEL=info
 LOG_DIR=./logs
 ```
 
-### Step 4: Build and Start the Agent
+### Step 4: Populate RAG Database
+
+**Important:** Before using the RAG query tool, you need to populate the vector database with content.
+
+**Option 1: Upload files via NestJS API**
+```bash
+# Upload PDF files
+curl -X POST http://localhost:3000/file/upload \
+  -F "file=@your-document.pdf"
+
+# Upload video files (will be transcribed)
+curl -X POST http://localhost:3000/file/upload \
+  -F "file=@your-video.mp4"
+```
+
+**Option 2: Use the Open WebUI interface**
+- Navigate to `http://localhost:3080`
+- Upload documents through the web interface
+- Files will be automatically processed and indexed
+
+**Verify indexing:**
+```bash
+# Check Qdrant collections
+curl http://localhost:6333/collections
+```
+
+You should see collections with indexed documents. Without populated data, the RAG query tool will return empty results.
+
+### Step 5: Build and Start the Agent
 
 ```bash
 # Build TypeScript
@@ -242,6 +241,10 @@ Agent: The weather in London is currently 15°C with partly cloudy skies...
 ```
 
 ## Architecture
+
+For detailed architecture documentation, including component diagrams, data flow, and design patterns, see [architecture.mmd](./architecture.mmd).
+
+### High-Level Overview
 
 ```
 ┌─────────────────────────────────────────────────────────┐

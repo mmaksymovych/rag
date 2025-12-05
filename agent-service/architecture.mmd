@@ -1,0 +1,401 @@
+```mermaid
+graph TB
+    subgraph "ReAct Agent Service"
+        CLI[Terminal CLI<br/>Matrix-style Interface]
+        
+        subgraph "Agent Core"
+            ORCH[Agent Orchestrator<br/>Main Controller]
+            DEC[Decision Service<br/>Intelligent Routing]
+            REF[Reflection Service<br/>Quality Evaluation]
+            IMP[Self-Improvement Loop<br/>Answer Refinement]
+        end
+        
+        subgraph "ReAct Engine"
+            REACT[ReAct Agent<br/>Reasoning + Acting]
+            LOOP[Thought/Action/Observation Loop]
+            PARSE[Response Parser<br/>Tool Call Extraction]
+        end
+        
+        subgraph "Tools"
+            WEATHER[getWeather<br/>Weather Information]
+            ANALYZE[analyzeProject<br/>Codebase Analysis]
+            RAG_TOOL[queryRAG<br/>Knowledge Base Queries]
+        end
+        
+        subgraph "Clients"
+            LMS[LM Studio Client<br/>Chat & Embeddings]
+            RAG_CLIENT[RAG API Client<br/>Vector Search]
+        end
+    end
+    
+    subgraph "External Services"
+        LMSTUDIO[LM Studio<br/>Port 1234<br/>Local LLM Server]
+        NESTJS[NestJS RAG API<br/>Port 3000<br/>RAG Processing]
+        QDRANT[Qdrant<br/>Port 6333<br/>Vector Database]
+    end
+    
+    %% User interaction
+    USER((User)) --> CLI
+    CLI --> ORCH
+    
+    %% Orchestration flow
+    ORCH --> DEC
+    DEC -->|Direct LLM| LMS
+    DEC -->|Use Tools| REACT
+    DEC -->|Use RAG| REACT
+    
+    %% ReAct flow
+    REACT --> LOOP
+    LOOP --> PARSE
+    PARSE --> WEATHER
+    PARSE --> ANALYZE
+    PARSE --> RAG_TOOL
+    
+    %% Tool execution
+    WEATHER --> LMS
+    ANALYZE --> LMS
+    RAG_TOOL --> RAG_CLIENT
+    
+    %% External connections
+    LMS --> LMSTUDIO
+    RAG_CLIENT --> NESTJS
+    NESTJS --> QDRANT
+    
+    %% Response flow
+    REACT --> ORCH
+    LMS --> ORCH
+    ORCH --> REF
+    REF --> IMP
+    IMP -->|Quality < 75%| LMS
+    IMP -->|Quality >= 75%| CLI
+    CLI --> USER
+    
+    %% Styling
+    classDef userClass fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    classDef cliClass fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    classDef coreClass fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    classDef reactClass fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    classDef toolClass fill:#00BCD4,stroke:#006064,stroke-width:2px,color:#fff
+    classDef clientClass fill:#607D8B,stroke:#37474F,stroke-width:2px,color:#fff
+    classDef externalClass fill:#F44336,stroke:#C62828,stroke-width:2px,color:#fff
+    
+    class USER userClass
+    class CLI cliClass
+    class ORCH,DEC,REF,IMP coreClass
+    class REACT,LOOP,PARSE reactClass
+    class WEATHER,ANALYZE,RAG_TOOL toolClass
+    class LMS,RAG_CLIENT clientClass
+    class LMSTUDIO,NESTJS,QDRANT externalClass
+```
+
+## Technologies Used
+
+### Core Technologies
+- **TypeScript** - Type-safe development with static typing and modern JavaScript features
+- **Node.js** - Runtime environment for server-side JavaScript execution
+- **LangChain.js** - LLM orchestration framework for prompt management and tool integration
+
+### AI/ML Stack
+- **LM Studio** - Local LLM inference server with OpenAI-compatible API
+  - Chat models: `openai/gpt-oss-20b`, `google/gemma-3-12b`
+  - Embedding model: `nomic-embed-text-v1.5`
+  - Port: 1234
+  - Features: Chat completions, embeddings generation, streaming support
+- **Qdrant** - High-performance vector database for embeddings storage
+  - Port: 6333
+  - Features: Cosine similarity search, metadata filtering, collections management
+- **RAG (Retrieval-Augmented Generation)** - Knowledge base integration pattern
+  - Combines vector search with LLM generation
+  - Context-aware responses based on retrieved documents
+
+### Backend Services
+- **NestJS** - Backend API framework for RAG processing
+  - Port: 3000
+  - Endpoints: `/chat` for RAG queries, `/file/upload` for document ingestion
+  - Features: Text chunking, embedding generation, vector search
+- **Docker** - Containerization for NestJS API and Qdrant
+  - Docker Compose orchestration
+  - Isolated service environments
+- **Axios** - HTTP client for API communication
+  - RESTful API calls to NestJS RAG service
+  - Error handling and retries
+
+### Libraries & Tools
+- **Winston** - Structured logging system (file-based)
+  - JSON log format
+  - Log levels: error, warn, info, debug
+  - Files: `logs/agent.log`, `logs/error.log`
+- **Chalk** - Terminal styling and colors
+  - Matrix-style green output
+  - Color-coded messages
+- **Ora** - Terminal loading spinners
+  - "Thinking..." animation during processing
+  - Non-blocking stdin handling
+- **Readline** - Interactive CLI interface
+  - Command-line input/output
+  - History management
+
+### Architecture Patterns
+
+#### 1. ReAct Pattern (Reasoning + Acting)
+- **Purpose**: Combines reasoning (thought) with acting (tool use)
+- **Implementation**: Iterative loop until final answer is reached
+- **Benefits**: 
+  - Explicit separation of thought and action
+  - Transparent decision-making process
+  - Reduces hallucinations through grounded actions
+
+#### 2. Chain of Thought
+- **Purpose**: Agent explicitly reasons before acting
+- **Implementation**: LLM generates "Thought" before each "Action"
+- **Benefits**:
+  - Transparent reasoning process
+  - Better problem decomposition
+  - Improved accuracy on complex tasks
+
+#### 3. Self-Reflection
+- **Purpose**: Agent evaluates its own responses
+- **Implementation**: Multi-dimensional quality assessment after each answer
+- **Metrics**:
+  - Accuracy: Factual correctness (0-100%)
+  - Relevance: Addresses the question (0-100%)
+  - Clarity: Well-structured and clear (0-100%)
+  - Completeness: Comprehensive coverage (0-100%)
+- **Benefits**: Quality assurance, continuous improvement feedback
+
+#### 4. Self-Improvement
+- **Purpose**: Iterative refinement based on reflection
+- **Implementation**: 
+  - Quality threshold enforcement (75%)
+  - Limited iterations (max 2) to prevent infinite loops
+  - LLM-based answer refinement
+- **Benefits**: Higher quality responses, automatic error correction
+
+#### 5. Intelligent Routing
+- **Purpose**: Query classification before processing
+- **Implementation**: Decision service analyzes query intent
+- **Routes**:
+  - Direct LLM: Simple questions, greetings, general knowledge
+  - ReAct with Tools: Weather queries, project analysis
+  - RAG: Technical documentation, stored knowledge
+- **Benefits**: Efficiency optimization, appropriate tool selection
+
+#### 6. Tool Abstraction
+- **Purpose**: Unified tool interface for extensibility
+- **Implementation**: 
+  - Consistent tool schema (name, description, parameters, execute)
+  - Centralized tool registry
+  - Type-safe tool definitions
+- **Benefits**: Easy to add new tools, consistent execution and error handling
+
+## Architecture Overview
+
+### Component Layers
+
+#### 1. **User Interface Layer**
+- **Terminal CLI**: Interactive command-line interface with Matrix-style green output
+- **Features**: Loading spinners, colored output, minimal technical logs
+- **Commands**: `/help`, `/describe`, `/exit`
+
+#### 2. **Agent Core Layer**
+- **Agent Orchestrator**: Main controller coordinating all components
+- **Decision Service**: Intelligent routing to determine query handling strategy
+  - Direct LLM for simple questions
+  - ReAct with Tools for complex queries
+  - RAG for knowledge-based questions
+- **Reflection Service**: Evaluates answer quality across 4 dimensions
+  - Accuracy: Factual correctness
+  - Relevance: Addresses the question
+  - Clarity: Well-structured and clear
+  - Completeness: Comprehensive coverage
+- **Self-Improvement Loop**: Iteratively refines answers below quality threshold (75%)
+
+#### 3. **ReAct Engine Layer**
+- **ReAct Agent**: Implements Reasoning + Acting pattern
+- **Thought/Action/Observation Loop**: Iterative problem-solving cycle
+  - Thought: Agent reasoning about next step
+  - Action: Tool selection and invocation
+  - Observation: Tool execution result
+- **Response Parser**: Extracts tool calls and final answers from LLM responses
+
+#### 4. **Tools Layer**
+- **getWeather**: Provides weather information for cities
+- **analyzeProject**: Analyzes codebase structure and README
+- **queryRAG**: Queries the RAG knowledge base for technical documentation
+
+#### 5. **Client Layer**
+- **LM Studio Client**: Interfaces with local LLM server
+  - Chat completions for reasoning and responses
+  - Embeddings generation
+- **RAG API Client**: HTTP client for NestJS RAG API
+  - Vector search queries
+  - Context retrieval
+
+#### 6. **External Services Layer**
+- **LM Studio** (Port 1234): Local LLM inference server
+  - Models: `openai/gpt-oss-20b`, `google/gemma-3-12b`
+  - Embedding model: `nomic-embed-text-v1.5`
+- **NestJS RAG API** (Port 3000): RAG processing backend
+  - Text chunking and embedding
+  - Vector search with Qdrant
+- **Qdrant** (Port 6333): Vector database
+  - Stores document embeddings
+  - Semantic similarity search
+
+## Data Flow
+
+### Query Processing Flow
+
+```
+1. User Input
+   ↓
+2. Decision Service analyzes query intent
+   ↓
+3a. Direct LLM Path (simple questions)
+    → LM Studio → Response
+   
+3b. ReAct Path (complex queries)
+    → ReAct Loop:
+       - Thought: Reasoning
+       - Action: Tool selection
+       - Action Input: Parameters
+       - Observation: Tool result
+    → Final Answer
+   
+3c. RAG Path (knowledge queries)
+    → queryRAG Tool
+    → RAG API Client
+    → NestJS API
+    → Qdrant Vector Search
+    → Context Retrieval
+    → LLM with Context
+    → Response
+   ↓
+4. Self-Reflection
+   → Evaluate quality (4 dimensions)
+   ↓
+5. Self-Improvement (if quality < 75%)
+   → Refine answer
+   → Re-evaluate
+   → Repeat (max 2 iterations)
+   ↓
+6. Display to User
+   → Reasoning
+   → Answer (green)
+   → Evaluation scores
+   → Response time
+```
+
+### ReAct Loop Detail
+
+```
+User: "What's the weather in London?"
+   ↓
+Iteration 1:
+  Thought: "I need to get weather information for London"
+  Action: getWeather
+  Action Input: {"city": "London"}
+  → System executes tool
+  Observation: "Temperature: 15°C, Conditions: Partly cloudy"
+   ↓
+Iteration 2:
+  Thought: "I have the weather data, I can provide the answer"
+  Final Answer: "The weather in London is currently 15°C with partly cloudy skies."
+```
+
+### Self-Reflection Flow
+
+```
+Generated Answer
+   ↓
+Reflection Service
+   ↓
+LLM Evaluation:
+  - Accuracy: 95%
+  - Relevance: 90%
+  - Clarity: 85%
+  - Completeness: 90%
+  - Overall: 90%
+   ↓
+Quality >= 75%?
+   YES → Display answer
+   NO → Self-Improvement Loop
+      → Generate improved answer
+      → Re-evaluate
+      → Repeat (max 2 times)
+```
+
+## Technology Stack Integration
+
+### LangChain.js Integration
+- **ChatPromptTemplate**: Structures ReAct prompts with tool descriptions
+- **Message History**: Maintains conversation context
+- **Tool Abstraction**: Unified interface for all tools
+
+### LM Studio Integration
+- **OpenAI-compatible API**: Uses OpenAI SDK
+- **Chat Completions**: For reasoning, responses, and evaluations
+- **Streaming**: Not used (full responses only)
+- **Timeout Handling**: 600-second timeout for long operations
+
+### RAG System Integration
+- **NestJS API**: RESTful HTTP API
+- **Endpoint**: `POST /chat`
+- **Request**: `{ query: string, topK?: number }`
+- **Response**: `{ response: string, context: [], sources: [] }`
+- **Error Handling**: Retries and fallbacks
+
+### Vector Database Integration
+- **Qdrant**: High-performance vector database
+- **Collections**: Organized by content type (text_chunks, etc.)
+- **Similarity Search**: Cosine similarity for semantic matching
+- **Metadata**: Source tracking for citations
+
+## Design Patterns
+
+### 1. **ReAct Pattern**
+- Combines reasoning (thought) with acting (tool use)
+- Iterative loop until final answer is reached
+- Explicit separation of thought and action
+
+### 2. **Chain of Thought**
+- Agent explicitly reasons before acting
+- Transparent decision-making process
+- Helps prevent hallucinations
+
+### 3. **Self-Reflection**
+- Agent evaluates its own responses
+- Multi-dimensional quality assessment
+- Provides feedback for improvement
+
+### 4. **Self-Improvement**
+- Iterative refinement based on reflection
+- Quality threshold enforcement (75%)
+- Limited iterations to prevent infinite loops
+
+### 5. **Intelligent Routing**
+- Query classification before processing
+- Optimal path selection (direct LLM vs tools vs RAG)
+- Efficiency optimization
+
+### 6. **Tool Abstraction**
+- Unified tool interface
+- Easy to add new tools
+- Consistent execution and error handling
+
+## Scalability Considerations
+
+### Current Architecture
+- Single-threaded Node.js process
+- Synchronous query processing
+- Local LLM inference
+- Docker-based external services
+
+### Future Enhancements
+- **Async Processing**: Queue-based architecture for concurrent queries
+- **Distributed LLM**: Multiple LM Studio instances with load balancing
+- **Caching Layer**: Redis for frequently accessed RAG results
+- **Monitoring**: Prometheus metrics and Grafana dashboards
+- **API Gateway**: RESTful API wrapper for the agent service
+- **Multi-Agent**: Specialized agents for different domains
+

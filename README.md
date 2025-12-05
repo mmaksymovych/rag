@@ -2,6 +2,19 @@
 
 A Retrieval-Augmented Generation (RAG) chatbot system built with NestJS, Ollama, and Qdrant that processes PDF and video files and enables semantic search through a vector database.
 
+## 🤖 Agent Service
+
+Looking for the intelligent conversational agent with ReAct architecture, self-reflection, and tool usage?
+
+👉 **[Agent Service Documentation](./agent-service/README.md)**
+
+The Agent Service provides:
+- ReAct (Reasoning + Acting) architecture with iterative tool usage
+- Intelligent routing between direct LLM, tools, and RAG
+- Self-reflection and self-improvement capabilities
+- Terminal-based conversational interface
+- Integration with this RAG system for knowledge-based queries
+
 ## Architecture
 
 ### System Overview
