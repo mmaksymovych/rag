@@ -2,7 +2,7 @@
 
 An intelligent conversational agent with ReAct (Reasoning + Acting) architecture, featuring intelligent routing, RAG integration, self-reflection, and self-improvement capabilities.
 
-> 📚 **For detailed technical information**, including technologies, architecture patterns, component diagrams, and design details, see **[architecture.mmd](./architecture.mmd)**
+> 📚 **For detailed technical information**, including technologies, architecture patterns, component diagrams, and design details, see **[architecture.md](./architecture.md)**
 
 ## Features
 
@@ -242,7 +242,7 @@ Agent: The weather in London is currently 15°C with partly cloudy skies...
 
 ## Architecture
 
-For detailed architecture documentation, including component diagrams, data flow, and design patterns, see [architecture.mmd](./architecture.mmd).
+For detailed architecture documentation, including component diagrams, data flow, and design patterns, see [architecture.md](./architecture.md).
 
 ### High-Level Overview
 

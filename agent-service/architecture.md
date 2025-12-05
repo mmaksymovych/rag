@@ -1,3 +1,7 @@
+# ReAct Agent Service - Architecture
+
+## System Architecture Diagram
+
 ```mermaid
 graph TB
     subgraph "ReAct Agent Service"
